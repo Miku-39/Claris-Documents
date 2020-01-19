@@ -6,8 +6,11 @@ import {
   StatusBar,
   ScrollView,
   LayoutAnimation,
-  NativeModules } from 'react-native'
+  NativeModules,
+  Platform,
+  TouchableOpacity } from 'react-native'
 const { UIManager } = NativeModules;
+import { MaterialIcons } from '@expo/vector-icons'
 
 import { connect } from 'react-redux'
 import MainComponent from '../components/MainComponent'
@@ -23,6 +26,10 @@ import {  storeCredentials,
 UIManager.setLayoutAnimationEnabledExperimental &&
   UIManager.setLayoutAnimationEnabledExperimental(true);
 
+const headerButtonsHandler = {
+    login: () => null
+}
+
 @connect(
     store => ({
         session: getSession(store)
@@ -35,38 +42,63 @@ UIManager.setLayoutAnimationEnabledExperimental &&
 export default class MainScreenContainer extends Component {
     static navigationOptions = ({navigation}) => {
         return ({
-            title: 'Документооборот'
+            title: 'Документооборот',
+            headerRight: (
+                <View style={{flexDirection: 'row', paddingRight: 7}}>
+                    <TouchableOpacity
+                            style={{marginLeft: 14, marginRight: 10}}
+                            onPress={() => headerButtonsHandler.login()}>
+                        <MaterialIcons name='person' size={28} color='white' />
+                    </TouchableOpacity>
+                </View>
+            )
         })
     }
     state = {}
 
      componentWillMount() {
          const { session } = this.props
-         LayoutAnimation.easeInEaseOut();
-         this.setState({session: session})
+         if (Platform.OS == 'ios')
+            LayoutAnimation.easeInEaseOut();
+         this.setState({session: session, logout: false})
      }
 
-     componentDidMount = async () => {
-       //await clearStorage()
-       LayoutAnimation.spring();
+     componentDidMount(){
+       headerButtonsHandler.login = this._handleBarClick
+       this._autoLogin()
+     }
+
+     _autoLogin = async () => {
+       if (Platform.OS == 'ios'){
+         LayoutAnimation.spring();
+       }
        const { user, password } = await loadCredentials()
-       console.log(user)
        if (user && password){
-         this.setState({user, password})
+         this.setState({user, password, wasLogged: true})
          this.props.login(user, password)
        }else{
          this.setState({logged: false, showLogin: true})
        }
      }
 
+     _logout = async () => {
+       await clearStorage()
+       LayoutAnimation.easeInEaseOut();
+       this.setState({user: '', password: '', logout: false, logged: false})
+     }
+
      componentWillReceiveProps = async (nextProps) => {
          const { logged, error, userId, roles } = nextProps.session
          const { dispatch } = this.props.navigation
          const { user, password } = this.state
-         LayoutAnimation.spring();
+         if (Platform.OS == 'ios'){
+           LayoutAnimation.spring();
+         }
          if (logged) {
+            console.log('logged')
             await storeCredentials(user, password)
-            this.setState({logged: true, showLogin: false})
+            this.setState({ logged: true, showLogin: false, logout: true,
+                            session: nextProps.session })
             //dispatch(resetAction)
          }
 
@@ -75,36 +107,55 @@ export default class MainScreenContainer extends Component {
          }
       }
 
-     _handleUserChange = (user) => this.setState({user})
+      _handleBarClick = () => {
+        if(this.state.logged){
+          LayoutAnimation.spring();
+          const { showLogin } = this.state;
+          this.setState({ showLogin: !showLogin, logout: true });
+        }else{
+          this.setState({ showLogin: true });
+        }
+      }
 
-     _handlePasswordChange = (password) => this.setState({password})
+     _handleUserChange = (user) => {
+       this.setState({user, password: '', logged: false, logout: false})
+     }
+
+     _handlePasswordChange = (password) => {
+       this.setState({password, logged: false, logout: false})
+     }
 
      _handleLogInClick = () => {
          const { user, password } = this.state
          if (!user || !password)
              Alert.alert( 'Ошибка', 'Необходимо заполнить имя пользователя и пароль', [ {text: 'Закрыть', onPress: () => { }} ])
+         else if (this.state.logout)
+             this._logout()
          else this.props.login(user, password)
      }
 
     render = () => {
         const { navigate } = this.props.navigation
-        const { session, logged } = this.state
+        const { session, logged, logout } = this.state
         const { user, password, isLogging, showLogin } = this.state
         return (
           <View onLayout={() => {LayoutAnimation.easeInEaseOut();}}>
+          <ScrollView
+              style={{width: '100%', height: '100%', flexDirection: 'column'}}>
           {showLogin &&
           <LoginComponent
               user={user}
               password={password}
               disabled={isLogging}
+              logged={logged}
+              logout={logout}
               changeUser={this._handleUserChange}
               changePassword={this._handlePasswordChange}
               logIn={this._handleLogInClick}/>}
-          <ScrollView
-              style={{width: '100%', height: '100%', flexDirection: 'column'}}>
+
           {logged &&
           <MainComponent
-            openTickets={(type) => navigate('Tickets', {type: type})}
+            openDocuments={(type) => navigate('Tickets', {type: type})}
             session={session}/>}
           </ScrollView>
           </View>

@@ -3,8 +3,8 @@ import { FETCH_REQUEST, IS_FETCHING, FETCHED, FETCH_FAILED } from '../actions/Ti
 
 
 const initialState = Map({
-    tickets: {},
-    items: [],
+    documents: [],
+    tasks: [],
     isFetching: false,
     fetched: false,
     error: null
@@ -19,8 +19,8 @@ export default ticketsReducer = (state = initialState, action) => {
             return state.merge({isFetching: true})
 
         case FETCHED:
-            return state.merge({isFetching: false, fetched: true, tickets: action.payload,
-               items: action.payload.regularTickets ? action.payload.regularTickets : []})
+            return state.merge({isFetching: false, fetched: true,
+               documents: action.payload.documents, tasks: action.payload.tasks })
 
         case FETCH_FAILED:
             return state.merge({isFetching: false, error: action.payload})

@@ -8,15 +8,10 @@ const initialState = Map({
   companyId: null,
   accountId: null,
   account: null,
-  department: null,
   roles: [],
-  isLesnaya: false,
   isLogging: false,
   logged: false,
-  error: null,
-  carParkings: [],
-  goodsParkings: [],
-  services: []
+  error: null
 })
 
 const reducer = (state = initialState, action) => {
@@ -28,10 +23,10 @@ const reducer = (state = initialState, action) => {
       return state.merge({ isLogging: true })
 
     case LOGGED:
-      const { token, userId, user, companyId, accountId, account, roles,
-         carParkings, goodsParkings, services, isLesnaya, department } = action.payload
-      return state.merge({ token, userId, user, companyId, accountId, isLesnaya, department,
-         account, roles, isLogging: false, logged: true, carParkings, goodsParkings, services })
+      const { token, userId, user, companyId,
+              accountId, account, roles } = action.payload
+      return state.merge({ token, userId, user, companyId, accountId,
+         account, roles, isLogging: false, logged: true })
 
     case LOGIN_FAILED:
       return state.merge({

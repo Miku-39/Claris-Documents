@@ -22,7 +22,7 @@ import {
   responsiveWidth
 } from "react-native-responsive-dimensions";
 
-class LoginComponent extends Component {
+export default class LoginComponent extends Component {
     render() {
         return (
           <KeyboardAvoidingView behavior='padding' keyboardVerticalOffset={70} style={styles.screenContainer}>
@@ -84,7 +84,7 @@ class LoginComponent extends Component {
                           this.props.logIn()
                       }}>
                           <View style={styles.enterButton}>
-                              <Text style={styles.enterText}>Войти</Text>
+                              <Text style={styles.enterText}>{this.props.logout ? 'Выйти' : 'Войти'}</Text>
                           </View>
                       </TouchableOpacity>
 
@@ -103,7 +103,6 @@ class LoginComponent extends Component {
     }
 }
 
-export default LoginComponent
 
 
 const styles = StyleSheet.create({ // стили всех элементов

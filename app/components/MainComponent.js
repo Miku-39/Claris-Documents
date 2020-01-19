@@ -25,27 +25,28 @@ const { UIManager } = NativeModules;
 UIManager.setLayoutAnimationEnabledExperimental &&
   UIManager.setLayoutAnimationEnabledExperimental(true);
 
-export default MainComponent = (props) => {
-    return (
+export default class MainComponent extends Component {
+    render = () => {
+      return (
 
-            <View style={styles.contentContainer} onLayout={() => {LayoutAnimation.easeInEaseOut();}}>
+              <View style={styles.contentContainer} onLayout={() => {LayoutAnimation.easeInEaseOut();}}>
+                  {this.props.session.roles.includes('sighting') &&
+                  <TouchableOpacity  onPress={() => { this.props.openDocuments('documents') }}>
+                      <View style={styles.Button}>
+                          <Image resizeMode='contain' source={Images.sign} style={styles.buttonImage}/>
+                          <Text style={styles.buttonLabel}>Документы</Text>
+                      </View>
+                  </TouchableOpacity>}
+                  {this.props.session.roles.includes('user') &&
+                  <TouchableOpacity onPress={() => { this.props.openDocuments('tasks')}}>
+                      <View style={styles.Button}>
+                          <Image resizeMode='contain' source={Images.list} style={styles.buttonImage}/>
+                          <Text style={styles.buttonLabel}>Задачи</Text>
+                      </View>
+                  </TouchableOpacity>}
 
-                <TouchableOpacity>
-                    <View style={styles.Button}>
-                        <Image resizeMode='contain' source={Images.sign} style={styles.buttonImage}/>
-                        <Text style={styles.buttonLabel}>Документы</Text>
-                    </View>
-                </TouchableOpacity>
-
-                <TouchableOpacity>
-                    <View style={styles.Button}>
-                        <Image resizeMode='contain' source={Images.list} style={styles.buttonImage}/>
-                        <Text style={styles.buttonLabel}>Задачи</Text>
-                    </View>
-                </TouchableOpacity>
-
-            </View>
-    )
+              </View>
+      )}
 }
 
 const styles = StyleSheet.create({

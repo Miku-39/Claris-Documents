@@ -14,8 +14,8 @@ export default class Loader extends Component {
                     this.props.isLoading &&
                     <View style={styles.dialogContainer}>
                         <BlurView tint="light" intensity={50} style={styles.dialog}>
-                            <ActivityIndicator color='white' size='large' style={{margin: 5}} />
-                            <Text style={{marginRight: 10, color: 'white'}}>{this.props.message}</Text>
+                            <ActivityIndicator color='black' size='large' style={{margin: 5}} />
+                            <Text style={{marginRight: 10, color: 'black'}}>{this.props.message}</Text>
                         </BlurView>
                     </View>
                 }

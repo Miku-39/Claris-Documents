@@ -9,15 +9,11 @@ function * loginSaga(action) {
 
     try {
         const loginResponse = yield call(api.login, user, password)
-
         const { access_token } = loginResponse.data
         yield call(api.setAuthHeader, access_token)
-
         const sessionResponse = yield call(api.authorize)
         const { id, name, companyId, accountId, department,
            accountName, roles, company } = sessionResponse.data
-        const carParkings = (yield call(api.fetchParkingsForCars)).data
-        const isLesnaya = accountId == '14366'
 
         const session = {
             token: access_token,
@@ -27,12 +23,7 @@ function * loginSaga(action) {
             accountId: accountId,
             account: accountName,
             roles: roles,
-            carParkings: carParkings,
-            isLesnaya: isLesnaya,
-            department: company.departmentId,
             departmentId: department
-            //goodsParkings: goodsParkings,
-            //services: services
         }
 
         //yield put(isLogging(false))

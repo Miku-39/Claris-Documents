@@ -93,9 +93,9 @@ export default class Ticket extends React.Component {
           onPress: () => {}
         },
         {text: 'ОК', onPress: () => {
-          ticket.status.id = status
-          ticket.status.alternativeName = statusNames[status]
-          ticket.status.name = statusNames[status]
+          ticket.state.id = status
+          ticket.state.name = statusNames[status]
+          ticket.state.name = statusNames[status]
           this.props.updateItem(ticket)
           this.props.goBack()
         }},
@@ -165,10 +165,10 @@ export default class Ticket extends React.Component {
                 { fieldGroups }
 
                   <View style={styles.buttonsContainer}>
-                      {this.props.ticket.status.id != REJECTED_STATUS_ID &&
+                      {this.props.ticket.state.id != REJECTED_STATUS_ID &&
                       <TouchableOpacity
                         style={[styles.button, {backgroundColor: Colors.buttonColor,
-                           width: this.props.ticket.status.id == ACCEPTED_STATUS_ID ? '90%' : '45%'}]}
+                           width: this.props.ticket.state.id == ACCEPTED_STATUS_ID ? '90%' : '45%'}]}
                         onPress={() => {updateStatus(REJECTED_STATUS_ID)}}>
                             <View style={styles.buttonLabelContainer}>
                               <Text style={[styles.field,
@@ -176,10 +176,10 @@ export default class Ticket extends React.Component {
                             </View>
                       </TouchableOpacity>}
 
-                      {this.props.ticket.status.id != ACCEPTED_STATUS_ID &&
+                      {this.props.ticket.state.id != ACCEPTED_STATUS_ID &&
                       <TouchableOpacity
                         style={[styles.button, {backgroundColor: Colors.accentColor,
-                           width: this.props.ticket.status.id == REJECTED_STATUS_ID ? '90%' : '45%'}]}
+                           width: this.props.ticket.state.id == REJECTED_STATUS_ID ? '90%' : '45%'}]}
                         onPress={() => {updateStatus(ACCEPTED_STATUS_ID)}}>
                             <View style={styles.buttonLabelContainer}>
                               <Text style={[styles.field,

@@ -18,13 +18,13 @@ import { connect } from 'react-redux'
 import { Metrics, Colors } from '../theme'
 import { fetch } from '../middleware/redux/actions/Tickets'
 import { update, dismiss } from '../middleware/redux/actions/Ticket'
-import { getTickets, getTicket, getSession } from '../middleware/redux/selectors'
 import Loader from '../components/Loader'
 
 const headerButtonsHandler = {
     refresh: () => null,
     search: () => null
 }
+
 const statusNames = {
   '421575459000': 'Отклонена',
   '12884953000': 'Принята'
@@ -41,11 +41,6 @@ const status2colors = {
     '4285216000': '#808080',//Закрыта
     '2237210852000': '#00A040',//выполняется
 }
-const goodsTypes = {
-  '4022223559000': 'Перемещение',
-  '4022223531000': 'Вывоз',
-  '4022223527000': 'Ввоз'
-}
 
 const { UIManager } = NativeModules;
 
@@ -54,9 +49,8 @@ UIManager.setLayoutAnimationEnabledExperimental &&
 
 @connect(
     store => ({
-        tickets: getTickets(store),
-        ticket: getTicket(store),
-        session: getSession(store)
+        tickets: store.tickets.toJS(),
+        ticket: store.ticket.toJS()
     }),
     { fetch, update, dismiss }
 )
@@ -65,11 +59,11 @@ export default class TicketsScreen extends Component {
     const { type } = navigation.state.params
     var title
     switch(type){
-      case 'onCreateTickets':
+      case 'documents':
       title = 'Документы';
       break;
 
-      case 'regularTickets':
+      case 'tasks':
       title = 'Задачи';
       break;
     }
@@ -102,12 +96,20 @@ export default class TicketsScreen extends Component {
     }
 
     componentWillReceiveProps (nextProps) {
-      const { session, data } = this.props
+      const { session, tickets, data } = this.props
       const { type } = this.props.navigation.state.params
-      items = data[type]
+      if(type == 'documents'){
+        items = tickets.documents
+        console.log(items)
+      }
+      if(type == 'tasks'){
+        items = tickets.tasks
+      }
       items = items ? items : []
+
       if(Platform.OS != 'android')
         LayoutAnimation.easeInEaseOut();
+
       this.setState({session: session, items: items})
 
       const { updated } = nextProps.ticket
@@ -153,9 +155,9 @@ export default class TicketsScreen extends Component {
 
     _handleSearchTextChanged = (text) => {
         const search = text.toLowerCase()
-        const { data } = this.props
+        const tickets = this.props.tickets
         const { type } = this.props.navigation.state.params
-        items = data[type]
+        items = tickets[type]
 
         data = items.filter( item => {
           containsSearch = false
@@ -166,7 +168,7 @@ export default class TicketsScreen extends Component {
           }
           return !search || containsSearch
         })
-        
+
         if(Platform.OS != 'android')
           LayoutAnimation.easeInEaseOut();
         this.setState({items: data})
@@ -178,26 +180,20 @@ export default class TicketsScreen extends Component {
 
     renderItem = ({item}) => {
       const { navigation } = this.props
-      const header = item.number + ', ' + item.status.name.toString().toLowerCase()
-      var name = item.visitorFullName ? item.visitorFullName : ' '
-
-      if(!item.visitorFullName && item.carNumber)
-        name = item.carNumber;
-
-      if(item.type.id == '3724900074000')
-        name = item.whatHappened;
-
+      console.log(item)
       try {
-      try{
-      var type = item.type && item.type.name + ' ' + item.visitDate.substring(0, 10)
-      }catch{ type = item.type && item.type.name + '' }
+
+      const header = item.number + ', ' + item.state.name
+      const name = item.company ? item.company.name : ''
+      const type = item.type && item.type.name + ' ' + item.visitDate.substring(0, 10)
+
       return(
 
       <View style={{margin: 5, marginTop: 0}}>
       <TouchableHighlight onPress={() => {navigation.navigate('Ticket', {ticket: item, updateItem: this.updateItem})}} underlayColor={Colors.accentColor} style={{borderRadius: 10}}>
       <View style={{flexDirection: 'row', backgroundColor: 'white', borderRadius: 10}}>
           <View style={{width: 10, backgroundColor: status2colors[item.status && item.status.id], borderBottomLeftRadius: 10, borderTopLeftRadius: 10}}></View>
-          <View style={{flexDirection: 'column', marginLeft: 5, width: '90%'}}>
+          <View style={{flexDirection: 'column', marginLeft: 5, marginBottom: 5, width: '90%'}}>
 
               <Text style={styles.ticketNumber}>{header}</Text>
               <Text style={styles.visitorName}>{name}</Text>
@@ -218,7 +214,6 @@ export default class TicketsScreen extends Component {
         const { items, searchBarIsShown } = this.state
         const { isFetching, fetched } = this.props.tickets
         const extractKey = ({id}) => id
-
         return (
             <View style={{flex: 1}}>
                 {
@@ -233,7 +228,6 @@ export default class TicketsScreen extends Component {
                         placeholder='Поиск...'
                     />
                 }
-
                 <Loader message='Обновление заявок' isLoading={isFetching}>
                   <FlatList
                       style={{flex: 1}}
@@ -267,7 +261,7 @@ const styles = StyleSheet.create({
       marginTop: 5,
       marginBottom: 3,
       color: Colors.textColor,
-      fontStyle: 'italic'
+      //fontStyle: 'italic'
     },
     visitorName:{
       fontSize: 20,
