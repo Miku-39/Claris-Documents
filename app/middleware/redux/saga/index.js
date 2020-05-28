@@ -1,10 +1,14 @@
 import { takeLatest } from 'redux-saga/effects'
 import { LOGIN_REQUEST } from '../actions/Session'
 import { FETCH_REQUEST } from '../actions/Tickets'
-import { UPDATE_TICKET_REQUEST, GET_FILE_REQUEST } from '../actions/Ticket'
+import { UPDATE_TICKET_REQUEST, GET_FILE_REQUEST,
+         AGREE_TICKET_REQUEST, ADD_TICKET_REQUEST,
+         DOWNLOAD_COMMENTS_REQUEST } from '../actions/Ticket'
 import loginSaga from './Session'
 import dataSaga from './Tickets'
-import { updateTicketSaga, getFileSaga } from './Ticket'
+import { updateTicketSaga, getFileSaga,
+         agreeDisagreeSaga, addTicketSaga,
+         downloadCommentsSaga } from './Ticket'
 
 
 function * sagaWatcher() {
@@ -12,7 +16,9 @@ function * sagaWatcher() {
         takeLatest(LOGIN_REQUEST, loginSaga),
         takeLatest(FETCH_REQUEST, dataSaga),
         takeLatest(UPDATE_TICKET_REQUEST, updateTicketSaga),
-        takeLatest(GET_FILE_REQUEST, getFileSaga)
+        takeLatest(ADD_TICKET_REQUEST, addTicketSaga),
+        takeLatest(GET_FILE_REQUEST, getFileSaga),
+        takeLatest(DOWNLOAD_COMMENTS_REQUEST, downloadCommentsSaga)
     ]
 }
 

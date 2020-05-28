@@ -2,27 +2,33 @@ import { call, put, select } from 'redux-saga/effects'
 
 import * as actions from '../actions/Tickets'
 import api from '../../api'
-import { getSession } from '../selectors'
 
 
 function * dataSaga() {
     yield put(actions.isFetching())
     const store = yield select()
-    const session = getSession(store)
+    const session = store.session.toJS()
+
     try {
-        var data = {
-          documents: [],
-          tasks: []
-        }
+        var documents
+        var tasks
+
         if(session.roles.includes('sighting')){
-          documentsResponse = yield call(api.fetchDocuments)
-          data.documents = documentsResponse.data
-        }/*
+          documents = yield call(api.fetchDocuments)
+        }
         if(session.roles.includes('user')){
-          tasksResponse = yield call(api.fetchTasks)
-          data.tasks = tasksResponse.data
-        }*/
+          tasks = yield call(api.fetchTasks)
+        }
+
+        var data = {
+          documents: documents ? documents.data : [],
+          tasks: tasks ? tasks.data : []
+        }
+
+        data.documents = data.documents.filter((x) => {return true})
+
         yield put(actions.fetched(data))
+        yield put(actions.isFetching())
         yield put(actions.fetched(data))
     }
     catch(error) {

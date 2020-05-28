@@ -7,7 +7,23 @@ import api from '../../api'
 export function * updateTicketSaga(action) {
     yield put(actions.isUpdating())
     try {
-        const response = yield call(api.updateTicketStatus, action.payload)
+        if(action.payload.action){
+          console.log(action.payload.ticket.id)
+          console.log(action.payload.action)
+          switch(action.payload.action){
+            case 'agree':
+              console.log('agree saga')
+              const agreeResponse = yield call(api.agreeTicket, action.payload.comment, action.payload.ticket.id)
+              break;
+
+            case 'disagree':
+              console.log('disagree saga')
+              const disagreeResponse = yield call(api.disagreeTicket, action.payload.comment, action.payload.ticket.id)
+              break;
+          }
+        }else{
+          const updateResponse = yield call(api.updateTicketStatus, action.payload.ticket)
+        }
         yield put(actions.updated())
     }
     catch(error) {
@@ -15,15 +31,42 @@ export function * updateTicketSaga(action) {
     }
 }
 
+export function * addTicketSaga(action) {
+    yield put(actions.isAdding())
+
+    try {
+        const response = yield call(api.addTicket, action.payload)
+        yield put(actions.added())
+    }
+    catch(error) {
+        yield put(actions.addingFailed(error))
+    }
+}
+
 export function * getFileSaga(action){
   yield put(actions.fileIsDownloading())
   try {
+      console.log('getFile')
       const response = yield call(api.getFileLink, action.payload)
-      const link = response.data.url
-      yield put(actions.fileDownloaded(link))
+      const link = response.data
+      console.log(link)
+      yield put(actions.fileDownloaded(link.url))
   }
   catch(error) {
-      //console.error(error)
+      console.error(error)
       yield put(actions.fileDownloadingFailed(error))
+  }
+}
+
+export function * downloadCommentsSaga(action){
+  yield put(actions.commentsDownloading())
+  try {
+      const response = yield call(api.getTaskComments, action.payload)
+      const comments = response.data
+      yield put(actions.commentsDownloaded(comments))
+  }
+  catch(error) {
+      //console.log(error)
+      yield put(actions.commentsDownloadingFailed(error))
   }
 }

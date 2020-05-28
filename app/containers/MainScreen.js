@@ -15,8 +15,7 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { connect } from 'react-redux'
 import MainComponent from '../components/MainComponent'
 import LoginComponent from '../components/LoginComponent'
-import * as selectors from '../middleware/redux/selectors'
-import { getSession } from '../middleware/redux/selectors'
+import Loader from '../components/Loader'
 import { login } from '../middleware/redux/actions/Session'
 import {  storeCredentials,
           loadCredentials,
@@ -32,7 +31,7 @@ const headerButtonsHandler = {
 
 @connect(
     store => ({
-        session: getSession(store)
+        session: store.session.toJS()
     }),
     (dispatch) => ({
         login: (user, password) => dispatch(login(user, password))
@@ -81,10 +80,12 @@ export default class MainScreenContainer extends Component {
        }
      }
 
-     _logout = async () => {
+     _logout = async (clear) => {
        await clearStorage()
        LayoutAnimation.easeInEaseOut();
-       this.setState({user: '', password: '', logout: false, logged: false})
+       if(clear != 'noClear'){
+         this.setState({user: '', password: '', logout: false, logged: false})
+       }
      }
 
      componentWillReceiveProps = async (nextProps) => {
@@ -95,7 +96,6 @@ export default class MainScreenContainer extends Component {
            LayoutAnimation.spring();
          }
          if (logged) {
-            console.log('logged')
             await storeCredentials(user, password)
             this.setState({ logged: true, showLogin: false, logout: true,
                             session: nextProps.session })
@@ -118,6 +118,8 @@ export default class MainScreenContainer extends Component {
       }
 
      _handleUserChange = (user) => {
+       LayoutAnimation.easeInEaseOut();
+       this._logout('noClear');
        this.setState({user, password: '', logged: false, logout: false})
      }
 
@@ -138,7 +140,9 @@ export default class MainScreenContainer extends Component {
         const { navigate } = this.props.navigation
         const { session, logged, logout } = this.state
         const { user, password, isLogging, showLogin } = this.state
+        const logging = this.props.session.isLogging
         return (
+          <Loader message='Вход в систему...' isLoading={logging}>
           <View onLayout={() => {LayoutAnimation.easeInEaseOut();}}>
           <ScrollView
               style={{width: '100%', height: '100%', flexDirection: 'column'}}>
@@ -156,9 +160,11 @@ export default class MainScreenContainer extends Component {
           {logged &&
           <MainComponent
             openDocuments={(type) => navigate('Tickets', {type: type})}
+            addTicket={() => navigate('Service')}
             session={session}/>}
           </ScrollView>
           </View>
+          </Loader>
         )
     }
 }

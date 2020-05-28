@@ -30,6 +30,7 @@ export default class MainComponent extends Component {
       return (
 
               <View style={styles.contentContainer} onLayout={() => {LayoutAnimation.easeInEaseOut();}}>
+
                   {this.props.session.roles.includes('sighting') &&
                   <TouchableOpacity  onPress={() => { this.props.openDocuments('documents') }}>
                       <View style={styles.Button}>
@@ -37,12 +38,21 @@ export default class MainComponent extends Component {
                           <Text style={styles.buttonLabel}>Документы</Text>
                       </View>
                   </TouchableOpacity>}
+
                   {this.props.session.roles.includes('user') &&
                   <TouchableOpacity onPress={() => { this.props.openDocuments('tasks')}}>
                       <View style={styles.Button}>
                           <Image resizeMode='contain' source={Images.list} style={styles.buttonImage}/>
                           <Text style={styles.buttonLabel}>Задачи</Text>
                       </View>
+                  </TouchableOpacity>}
+
+                  {this.props.session.roles.includes('user') &&
+                  <TouchableOpacity onPress={() => { this.props.addTicket() }}>
+                        <View style={styles.Button}>
+                          <Image resizeMode='contain' source={Images.add_task} style={styles.buttonImage} />
+                          <Text style={styles.buttonLabel}>Создать задачу</Text>
+                        </View>
                   </TouchableOpacity>}
 
               </View>
@@ -78,6 +88,7 @@ const styles = StyleSheet.create({
     buttonLabel: {
         fontSize: responsiveFontSize(18) > 20 ? 20 : responsiveFontSize(18),
         margin: 5,
+        maxWidth: 150,
         textAlign: 'center'
     }
 })

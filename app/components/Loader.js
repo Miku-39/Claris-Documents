@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native'
-import { BlurView } from 'expo-blur';
-import { Metrics, Colors } from '../theme'
+import { Colors } from '../theme'
 
 export default class Loader extends Component {
     render () {
@@ -13,10 +12,10 @@ export default class Loader extends Component {
                 {
                     this.props.isLoading &&
                     <View style={styles.dialogContainer}>
-                        <BlurView tint="light" intensity={50} style={styles.dialog}>
-                            <ActivityIndicator color='black' size='large' style={{margin: 5}} />
-                            <Text style={{marginRight: 10, color: 'black'}}>{this.props.message}</Text>
-                        </BlurView>
+                        <View style={styles.dialog}>
+                            <ActivityIndicator color='white' size='large' />
+                            <Text style={{marginRight: 10, color: 'white'}}>{this.props.message}</Text>
+                        </View>
                     </View>
                 }
             </View>
@@ -41,6 +40,7 @@ const styles = StyleSheet.create({
         width: 210,
         height: 50,
         backgroundColor: Colors.accentColor,
+        //opacity: 0.9,
         borderRadius: 30,
     }
 })

@@ -6,68 +6,97 @@ import {  View,
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Linking
+  Linking,
+  LayoutAnimation,
+  NativeModules,
+  TextInput,
+  Platform
 } from 'react-native';
 import { Colors } from '../theme'
-import * as selectors from '../middleware/redux/selectors'
 import { connect } from 'react-redux'
-import { fetch } from '../middleware/redux/actions/Tickets'
-import { update, dismiss, getFile } from '../middleware/redux/actions/Ticket'
+import { update, dismiss, getFile, downloadComments } from '../middleware/redux/actions/Ticket'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 const statusNames = {
-  '421575459000': 'Отклонена',
-  '12884953000': 'Принята'
+  '2708800028000': 'Отклонен',
+  '2708800026000': 'Принята'
 }
 
-const REJECTED_STATUS_ID = '421575459000';
-const ACCEPTED_STATUS_ID = '12884953000';
-const ON_CREATE_STATUS_ID = '4285215000';
+const REJECTED_STATUS_ID = '2708800028000';
+const ACCEPTED_STATUS_ID = '2708800026000';
+const ON_CREATE_STATUS_ID = '2340461775000';
 
-const allowedStatuses = [
-  REJECTED_STATUS_ID,
-  ACCEPTED_STATUS_ID,
-  ON_CREATE_STATUS_ID
-]
+const { UIManager } = NativeModules;
+
+UIManager.setLayoutAnimationEnabledExperimental &&
+  UIManager.setLayoutAnimationEnabledExperimental(true);
 
 @connect(
     store => ({
-        session: selectors.getSession(store),
-        error: selectors.getIsTicketAddingFailed(store),
-        fileDownloaded: selectors.getIsFileDownloaded(store),
-        link: selectors.getLink(store),
+        session: store.session.toJS(),
+        error: store.ticket.get('error'),
+        fileDownloaded: store.ticket.get('fileDownloaded'),
+        link: store.ticket.get('link'),
+        //comments: store.ticket.get('comments'),
+        //commentsDownloading: store.ticket.get('commentsDownloading'),
+        //commentsDownloaded: store.ticket.get('commentsDownloaded'),
+        //commentsDownloadingFailed: store.ticket.get('commentsDownloadingFailed'),
+        ticketRedux: store.ticket.toJS()
     }),
     dispatch => ({
         dismiss: () => dispatch(dismiss()),
-        getFile: (fileId) => dispatch(getFile(fileId))
+        getFile: (fileId) => dispatch(getFile(fileId)),
+        downloadComments: (id) => dispatch(downloadComments(id)),
+        update: (payload) => dispatch(update(payload))
     })
 )
 
 export default class Ticket extends React.Component {
   constructor(props) {
      super(props);
-     this.state = {}
+     this.state = {
+       ticket: this.props.ticket,
+       comment: '',
+       action: null,
+       comments: []
+     }
+  }
+
+  componentDidMount(){
+    if(true) {
+      id = this.props.ticket.id
+      this.props.downloadComments(id)
+    }
   }
 
   componentWillReceiveProps(newProps) {
-    const { fileDownloaded, fileDownloadingFailed, error, link } = newProps
+    const { error, link, ticketRedux } = newProps
 
     if (link){
         const receiptUrl = link
         Linking.canOpenURL(receiptUrl).then(supported => {
-          if (supported) {
-            Linking.openURL(receiptUrl);
-          } else {
-            Alert.alert(
-              "Ошибка",
+        if (supported) {Linking.openURL(receiptUrl);} else {
+            Alert.alert( "Ошибка",
               "Не удалось найти программу, чтобы открыть файл данного формата",
-              [{ text: "Закрыть", onPress: () => {} }]
-            );
-          }
-        });
-
+              [{ text: "Закрыть", onPress: () => {} }]);}});
     }
 
-    if (error) {
+    if (ticketRedux.updated) {
+        Alert.alert( 'Изменение статуса', 'Статус заявки успешно изменен', [
+            {text: 'Закрыть', onPress: () => {}}
+        ])
+    }
+
+    if (ticketRedux.commentsDownloaded) {
+      console.log(ticketRedux.comments)
+      console.log('Comments Downloaded')
+    }
+
+    if (ticketRedux.commentsDownloadingFailed) {
+      console.log('Comments Downloading Failed')
+    }
+
+    if (ticketRedux.updatingFailed) {
         console.error(error)
         Alert.alert( 'Ошибка', 'При сохранении возникла ошибка.',
         [{text: 'Закрыть', onPress: () => { }}])
@@ -77,31 +106,64 @@ export default class Ticket extends React.Component {
   render () {
     Text.defaultProps = Text.defaultProps || {};
     Text.defaultProps.allowFontScaling = true;
-    const { fieldsProperties, changeStatus, ticket } = this.props
+    const { fieldsProperties, changeStatus } = this.props
+    const { ticket } = this.state
 
-    const handleShowFilePress = () => {
-      this.props.getFile(ticket.file.id)
+    const handleShowFilePress = (fileType) => {
+      console.log(fileType)
+      this.props.getFile(ticket[fileType].id)
     }
 
-    const updateStatus = (status) => {
-      Alert.alert(
-      'Изменение статуса',
-      ('Для заявки' + (ticket.number && (' №'+ticket.number)) + ' будет установлен статус "'+statusNames[status]+'"'),
-      [
-        {
-          text: 'Отмена',
-          onPress: () => {}
-        },
-        {text: 'ОК', onPress: () => {
-          ticket.state.id = status
-          ticket.state.name = statusNames[status]
-          ticket.state.name = statusNames[status]
-          this.props.updateItem(ticket)
-          this.props.goBack()
-        }},
-      ],
-      {cancelable: false},
-    );
+    const agreeTicket = () => {
+      //this.props.agreeTicket()
+      const { action, comment } = this.state
+      LayoutAnimation.easeInEaseOut();
+      if(!action){
+        this.setState({action: 'agree'})
+      }else{
+        //this.props.refresh()
+        //this.props.goBack()
+        /*this.props.update({
+          action: 'agree',
+          comment: comment ? comment : null,
+          ticket: this.props.ticket})*/
+      }
+    }
+
+    const disagreeTicket = () => {
+      const { action, comment } = this.state
+      LayoutAnimation.easeInEaseOut();
+      if(!action){
+        this.setState({action: 'disagree'})
+      }else{
+        if(comment){
+          this.setState({highlightText: false})
+          //this.props.refresh()
+          //this.props.goBack()
+          /*
+          this.props.update({
+            action: 'disagree',
+            comment: comment,
+            ticket: this.props.ticket})*/
+        }else{
+          this.setState({highlightText: true})
+          Alert.alert( 'Заполните комментарий',
+          'При отклонении заявки поле "комментарий" является обязательным.')
+        }
+      }
+    }
+
+    const updateComment = (comment) => {
+      this.setState({comment: comment})
+    }
+
+    const cancel = () => {
+      LayoutAnimation.easeInEaseOut();
+      this.setState({
+        action: null,
+        comment: '',
+        highlightText: false
+      })
     }
 
     const fieldGroupRenderer = (fieldGroup) => {
@@ -119,12 +181,13 @@ export default class Ticket extends React.Component {
                         </View>)
           }
           if(fieldGroup[key].type == 'list'){
+            if(value.name){
             fields.push(<View>
                             <Text style={styles.fieldTitle}>
                             {fieldGroup[key].name}</Text>
                             <Text style={styles.field}>
                             {value.name}</Text>
-                        </View>)
+                        </View>)}
           }
           if(fieldGroup[key].type == 'date'){
             fields.push(<View>
@@ -138,7 +201,7 @@ export default class Ticket extends React.Component {
             fields.push(<View>
                             <Text style={styles.fieldTitle}>
                             {fieldGroup[key].name}</Text>
-                            <Text onPress={() => {handleShowFilePress()}}
+                            <Text onPress={() => {handleShowFilePress(key)}}
                             style={[styles.field, {color: '#006699'}]}>
                             {value.name}</Text>
                         </View>)
@@ -158,39 +221,72 @@ export default class Ticket extends React.Component {
     for(fieldGroup in fieldsProperties){
       fieldGroups.push(fieldGroupRenderer(fieldsProperties[fieldGroup]))
     }
+
     return (
         <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center'}}>
-            <ScrollView>
+        <KeyboardAwareScrollView
+            enableOnAndroid={true}
+            extraHeight={130}
+            extraScrollHeight={130}>
             <View style={{marginBottom: 150, marginLeft: 5, marginRight: 5}}>
                 { fieldGroups }
-
-                  <View style={styles.buttonsContainer}>
-                      {this.props.ticket.state.id != REJECTED_STATUS_ID &&
+                  <View style={[styles.buttonsContainer, {marginBottom: 0}]}>
+                      {this.state.action &&
                       <TouchableOpacity
                         style={[styles.button, {backgroundColor: Colors.buttonColor,
-                           width: this.props.ticket.state.id == ACCEPTED_STATUS_ID ? '90%' : '45%'}]}
-                        onPress={() => {updateStatus(REJECTED_STATUS_ID)}}>
+                           width: '95%'}]}
+                        onPress={() => {cancel()}}>
                             <View style={styles.buttonLabelContainer}>
                               <Text style={[styles.field,
-                                 {marginBottom: 5, marginRight: 5}]}>Отклонить</Text>
+                                 {marginBottom: 5,
+                                  marginRight: 5,
+                                  fontWeight: 'bold'}]}>
+                                  Отмена</Text>
+                            </View>
+                      </TouchableOpacity>
+                      }
+                  </View>
+                  {(this.props.type == 'documents') &&
+                  <View style={styles.buttonsContainer}>
+                      {this.state.action &&
+                      <TextInput
+                        placeholder={this.state.action == 'disagree' ? 'Комментарий *' : 'Комментарий'}
+                        underlineColorAndroid='transparent'
+                        style={[styles.textInputStyle, {borderColor: this.state.highlightText ? Colors.accentColor : '#FFF'}]}
+                        multiline={true}
+                        scrollEnabled={true}
+                        onChangeText={(text) => {updateComment(text)}}
+                        />}
+                      {(this.state.action != 'agree') &&
+                      <TouchableOpacity
+                        style={[styles.button, {backgroundColor: Colors.buttonColor,
+                           width: this.state.action ? '95%' : '45%'}]}
+                        onPress={() => {disagreeTicket()}}>
+                            <View style={styles.buttonLabelContainer}>
+                              <Text style={[styles.field,
+                                 {marginBottom: 5,
+                                  marginRight: 5,
+                                  fontWeight: this.state.action ? 'bold' : 'normal'}]}>
+                                 Отклонить</Text>
                             </View>
                       </TouchableOpacity>}
-
-                      {this.props.ticket.state.id != ACCEPTED_STATUS_ID &&
+                      {(this.state.action != 'disagree') &&
                       <TouchableOpacity
                         style={[styles.button, {backgroundColor: Colors.accentColor,
-                           width: this.props.ticket.state.id == REJECTED_STATUS_ID ? '90%' : '45%'}]}
-                        onPress={() => {updateStatus(ACCEPTED_STATUS_ID)}}>
+                           width: this.state.action ? '95%' : '45%'}]}
+                        onPress={() => {agreeTicket()}}>
                             <View style={styles.buttonLabelContainer}>
                               <Text style={[styles.field,
-                                 {color: 'white', marginBottom: 5, marginRight: 5}]}>Принять</Text>
+                                 {color: 'white',
+                                 marginBottom: 5,
+                                 marginRight: 5,
+                                 fontWeight: this.state.action ? 'bold' : 'normal'}]}>
+                                 Согласовать</Text>
                             </View>
                       </TouchableOpacity>}
-                  </View>
-
-
+                  </View>}
             </View>
-            </ScrollView>
+            </KeyboardAwareScrollView>
         </View>
     )
   }
@@ -213,9 +309,23 @@ const styles = StyleSheet.create({
      marginTop: 5,
      fontSize: 20
    },
+   textInputStyle:{
+    height: 160,
+    width: '95%',
+    borderRadius: 20,
+    borderWidth: 5,
+    borderColor: '#FFF',
+    backgroundColor : "#FFF",
+    marginTop: 10,
+    marginBottom: 10,
+    fontSize: 18,
+    color: Colors.textColor,
+    padding: 10,
+    paddingTop: 10
+  },
    buttonsContainer: {
      width: '100%',
-     marginTop: 15,
+     flexWrap: 'wrap',
      justifyContent: 'space-around',
      flexDirection: 'row'
    },

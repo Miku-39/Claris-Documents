@@ -4,40 +4,31 @@ import { View,
   NativeModules } from 'react-native'
 import { Colors } from '../theme'
 import Ticket from '../components/Ticket'
-import * as selectors from '../middleware/redux/selectors'
 import { connect } from 'react-redux'
 
 const fieldsProperties = [
 {
-  status:             { name: 'Статус', type: 'list' },
-  type:               { name: 'Вид', type: 'list' },
-  visitDate:          { name: 'Дата', type: 'date' },
-  expirationDate:     { name: 'Действует до', type: 'date' }
+  state:              { name: 'Статус', type: 'list' },
+  actualCreationDate: { name: 'Дата', type: 'date' },
+  registrationDate:   { name: 'Создана', type: 'date' },
+  finishDate:         { name: 'Завершить к', type: 'date' },
+  expirationDate:     { name: 'Действует до', type: 'date' },
 }, {
-  visitorFullName:    { name: 'ФИО посетителя', type: 'text' },
-  khimkiEmailGuest:   { name: 'E-mail посетителя', type: 'text' },
-  khimkiGuestPhone:   { name: 'Телефон посетителя', type: 'text' },
+  kind:               { name: 'Вид документа', type: 'list' },
+  category:           { name: 'Тип документа', type: 'list' },
+  author:             { name: 'Автор', type: 'list' },
+  company:            { name: 'Компания', type: 'list' },
 }, {
-  whoMeets:           { name: 'ФИО встречающего', type: 'text' },
-  khimkiEmailMeeting: { name: 'E-mail встречающего', type: 'text' },
-  phone:              { name: 'Телефон встречающего', type: 'text' }
-}, {
-  file:               { name: 'Файл', type: 'file'}
-}, {
-  carNumber:          { name: 'Номер авто', type: 'text' },
-  carModelText:       { name: 'Модель авто', type: 'text' },
-  parkingPlace:       { name: 'Место на парковке', type: 'text' },
-  parking:            { name: 'Парковка', type: 'list' }
-}, {
-  companyName:        { name: 'Компания-поставщик', type: 'text' },
-  materialValuesData: { name: 'Данные материальных ценностей', type: 'text' },
-  khimkiAccessPremises:{ name: 'Маршрут перемещения', type: 'text' }
+  content:            { name: 'Содержание', type: 'text' },
+  file:               { name: 'Файл', type: 'file'},
+  scan:               { name: 'Скан', type: 'file' },
 }, {
   whereHappened:      { name: 'Где произошло', type: 'text' },
-  whatHappened:       { name: 'Что сделать', type: 'text' }
+  whatHappened:       { name: 'Что сделать', type: 'text' },
+  description:        { name: 'Что сделать', type: 'text' },
+  responsible:        { name: 'Ответственный', type: 'list' },
 }, {
   note:               { name: 'Примечание', type: 'text' },
-  managementCompanyComment: { name: 'Комментарий от администрации ХБП', type: 'text'}
 }
 ]
 
@@ -58,18 +49,18 @@ export default class TicketScreen extends Component {
         const { ticket } = navigation.state.params
 
         return ({
-            title: ticket.number + ' - ' + ticket.state.name
+            title: (ticket.number ? ('№' + ticket.number + ' - ') : '') + (ticket.state ? ticket.state.name : ticket.status.name)
         })
     }
 
     componentWillMount(){
-      const { ticket } = this.props.navigation.state.params
-      this.setState({ticket: ticket})
+      const { ticket, type } = this.props.navigation.state.params
+      this.setState({ticket: ticket, type: type})
     }
 
     componentWillReceiveProps(nextProps) {
-      const { ticket } = this.props.navigation.state.params
-      this.setState({ticket: ticket})
+      const { ticket, type } = this.props.navigation.state.params
+      this.setState({ticket: ticket, type: type})
     }
 
     updateItem = (ticket) => {
@@ -83,6 +74,7 @@ export default class TicketScreen extends Component {
         return (
             <View style={{flex: 1}}>
                 <Ticket ticket={this.state.ticket}
+                        type={this.state.type}
                         fieldsProperties={fieldsProperties}
                         updateItem={this.updateItem}
                         goBack={this.props.navigation.goBack}/>
