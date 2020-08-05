@@ -27,6 +27,8 @@ UIManager.setLayoutAnimationEnabledExperimental &&
 
 export default class MainComponent extends Component {
     render = () => {
+      Text.defaultProps = Text.defaultProps || {};
+      Text.defaultProps.allowFontScaling = false;
       return (
 
               <View style={styles.contentContainer} onLayout={() => {LayoutAnimation.easeInEaseOut();}}>

@@ -12,6 +12,8 @@ function * loginSaga(action) {
         const { access_token } = loginResponse.data
         yield call(api.setAuthHeader, access_token)
         const sessionResponse = yield call(api.authorize)
+        const employeesResponse = yield call(api.fetchEmployees)
+        const employees = employeesResponse.data.map(item => {return {name: item.name, id: item.id}})
         const { id, name, companyId, accountId, department,
            accountName, roles, company } = sessionResponse.data
 
@@ -23,7 +25,8 @@ function * loginSaga(action) {
             accountId: accountId,
             account: accountName,
             roles: roles,
-            departmentId: department
+            departmentId: department,
+            employees: employees
         }
 
         //yield put(isLogging(false))

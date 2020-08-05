@@ -17,10 +17,10 @@ export default class PickerComponent extends React.Component {
   }
 
   state = {
-    pickedData: null
+    pickedData: this.props.default.id
   };
 
-  data = this.props.removeEmptyField ? this.props.items.map(item => {return {label: item.name, value: item.id}}) : [{label: 'Не выбрано', value: ''}].concat(this.props.items.map(item => {return {label: item.name, value: item.id}}))
+  data = this.props.items.map(item => {return {label: item.name, value: item.id}})
   handlePicker = data => {
     LayoutAnimation.easeInEaseOut()
     this.setState({ pickedData: data });
@@ -38,7 +38,6 @@ export default class PickerComponent extends React.Component {
           <Picker
             style={{width: this.props.isHighlighted ? 210 : 200,
                     maxWidth: this.props.isHighlighted ? 200 : 190,
-                    marginRight: -5,
                     marginBottom: -10,
                     marginTop: this.props.isHighlighted ? 5 : 0,
                     minHeight: 40}}
@@ -70,7 +69,7 @@ const styles = StyleSheet.create({
   pickerLabel: {
     fontWeight: 'bold',
     color: Colors.textColor,
-    margin: 5,
+    marginRight: 5,
     fontSize: 16,
     alignSelf: 'center',
     textAlign: 'center'

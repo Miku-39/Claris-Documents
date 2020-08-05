@@ -11,7 +11,8 @@ const initialState = Map({
   roles: [],
   isLogging: false,
   logged: false,
-  error: null
+  error: null,
+  employees: []
 })
 
 const reducer = (state = initialState, action) => {
@@ -24,9 +25,9 @@ const reducer = (state = initialState, action) => {
 
     case LOGGED:
       const { token, userId, user, companyId,
-              accountId, account, roles } = action.payload
+              accountId, account, roles, employees } = action.payload
       return state.merge({ token, userId, user, companyId, accountId,
-         account, roles, isLogging: false, logged: true })
+         account, roles, employees, isLogging: false, logged: true })
 
     case LOGIN_FAILED:
       return state.merge({

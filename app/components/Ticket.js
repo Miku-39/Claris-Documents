@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import * as WebBrowser from 'expo-web-browser';
 import {  View,
   ScrollView,
+  RefreshControl,
   Text,
   StyleSheet,
   TouchableOpacity,
@@ -16,6 +17,8 @@ import { Colors } from '../theme'
 import { connect } from 'react-redux'
 import { update, dismiss, getFile, downloadComments } from '../middleware/redux/actions/Ticket'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import CommentsViewer from '../components/CommentsViewer'
+//import fieldGroupRenderer from '../components/fieldGroupRenderer'
 
 const statusNames = {
   '2708800028000': 'Отклонен',
@@ -46,7 +49,7 @@ UIManager.setLayoutAnimationEnabledExperimental &&
     dispatch => ({
         dismiss: () => dispatch(dismiss()),
         getFile: (fileId) => dispatch(getFile(fileId)),
-        downloadComments: (id) => dispatch(downloadComments(id)),
+        downloadComments: (ticket) => dispatch(downloadComments(ticket)),
         update: (payload) => dispatch(update(payload))
     })
 )
@@ -58,49 +61,65 @@ export default class Ticket extends React.Component {
        ticket: this.props.ticket,
        comment: '',
        action: null,
-       comments: []
+       comments: [],
+       commentsDownloading: false,
+       commentsDownloaded: false
      }
   }
 
   componentDidMount(){
-    if(true) {
       id = this.props.ticket.id
-      this.props.downloadComments(id)
-    }
+      type = this.props.type
+      this.props.downloadComments({type: type, id: id})
   }
 
   componentWillReceiveProps(newProps) {
     const { error, link, ticketRedux } = newProps
 
-    if (link){
-        const receiptUrl = link
-        Linking.canOpenURL(receiptUrl).then(supported => {
-        if (supported) {Linking.openURL(receiptUrl);} else {
-            Alert.alert( "Ошибка",
-              "Не удалось найти программу, чтобы открыть файл данного формата",
-              [{ text: "Закрыть", onPress: () => {} }]);}});
-    }
+    this.setState({
+      commentsDownloaded: ticketRedux.commentsDownloaded,
+      commentsDownloading: ticketRedux.commentsDownloading,
+      comments: ticketRedux.comments
+    })
 
-    if (ticketRedux.updated) {
-        Alert.alert( 'Изменение статуса', 'Статус заявки успешно изменен', [
-            {text: 'Закрыть', onPress: () => {}}
-        ])
-    }
+            if (link){
+                    const receiptUrl = link
+                    Linking.canOpenURL(receiptUrl).then(supported => {
+                    if (supported) {Linking.openURL(receiptUrl);} else {
+                        Alert.alert( "Ошибка",
+                          "Не удалось найти программу, чтобы открыть файл данного формата",
+                          [{ text: "Закрыть", onPress: () => {} }]);}});
+            }
 
-    if (ticketRedux.commentsDownloaded) {
-      console.log(ticketRedux.comments)
-      console.log('Comments Downloaded')
-    }
+            if (ticketRedux.updated) {
+                    Alert.alert( 'Изменение статуса', 'Статус заявки успешно изменен', [
+                        {text: 'Закрыть', onPress: () => {}}
+                    ])
+            }
 
-    if (ticketRedux.commentsDownloadingFailed) {
-      console.log('Comments Downloading Failed')
-    }
+            if (ticketRedux.commentsDownloaded) {
+                  console.log(ticketRedux.comments[0])
+                  console.log('Comments Downloaded')
+                  const commentsDownloaded = ticketRedux.comments[0] ? true : false
+                  LayoutAnimation.easeInEaseOut();
+                  this.setState({commentsDownloaded: commentsDownloaded, comments: ticketRedux.comments})
+            }
 
-    if (ticketRedux.updatingFailed) {
-        console.error(error)
-        Alert.alert( 'Ошибка', 'При сохранении возникла ошибка.',
-        [{text: 'Закрыть', onPress: () => { }}])
-    }
+            if (ticketRedux.commentsDownloadingFailed) {
+                  console.log('Comments Downloading Failed')
+            }
+
+            if (ticketRedux.updatingFailed) {
+                    console.error(error)
+                    Alert.alert( 'Ошибка', 'При сохранении возникла ошибка.',
+                    [{text: 'Закрыть', onPress: () => { }}])
+            }
+  }
+
+  _comments_refresh = () => {
+    id = this.props.ticket.id
+    type = this.props.type
+    this.props.downloadComments({type: type, id: id})
   }
 
   render () {
@@ -121,12 +140,12 @@ export default class Ticket extends React.Component {
       if(!action){
         this.setState({action: 'agree'})
       }else{
-        //this.props.refresh()
-        //this.props.goBack()
-        /*this.props.update({
+        this.props.update({
           action: 'agree',
           comment: comment ? comment : null,
-          ticket: this.props.ticket})*/
+          ticket: this.props.ticket})
+          //this.props.navigation.state.params.onGoBack()
+          //this.props.navigation.goBack()
       }
     }
 
@@ -138,13 +157,12 @@ export default class Ticket extends React.Component {
       }else{
         if(comment){
           this.setState({highlightText: false})
-          //this.props.refresh()
-          //this.props.goBack()
-          /*
           this.props.update({
             action: 'disagree',
             comment: comment,
-            ticket: this.props.ticket})*/
+            ticket: this.props.ticket})
+            //this.props.navigation.state.params.onGoBack();
+            //this.props.navigation.goBack();
         }else{
           this.setState({highlightText: true})
           Alert.alert( 'Заполните комментарий',
@@ -224,12 +242,27 @@ export default class Ticket extends React.Component {
 
     return (
         <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center'}}>
+        <ScrollView refreshControl={
+          <RefreshControl
+              refreshing={this.state.commentsDownloading}
+              onRefresh={this._comments_refresh}
+              colors={['white']}
+              progressBackgroundColor={Colors.accentColor}
+              tintColor={Colors.accentColor}
+              title="Загрузка комментариев..."
+              titleColor={Colors.accentColor}/>
+        }>
         <KeyboardAwareScrollView
             enableOnAndroid={true}
             extraHeight={130}
             extraScrollHeight={130}>
             <View style={{marginBottom: 150, marginLeft: 5, marginRight: 5}}>
                 { fieldGroups }
+                {this.state.commentsDownloaded &&
+                <CommentsViewer
+                    comments={this.state.comments}
+                    type={this.props.type}/>}
+
                   <View style={[styles.buttonsContainer, {marginBottom: 0}]}>
                       {this.state.action &&
                       <TouchableOpacity
@@ -287,6 +320,7 @@ export default class Ticket extends React.Component {
                   </View>}
             </View>
             </KeyboardAwareScrollView>
+            </ScrollView>
         </View>
     )
   }

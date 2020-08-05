@@ -7,23 +7,23 @@ import api from '../../api'
 export function * updateTicketSaga(action) {
     yield put(actions.isUpdating())
     try {
-        if(action.payload.action){
           console.log(action.payload.ticket.id)
           console.log(action.payload.action)
           switch(action.payload.action){
             case 'agree':
               console.log('agree saga')
+              console.log(action.payload.comment)
               const agreeResponse = yield call(api.agreeTicket, action.payload.comment, action.payload.ticket.id)
+              console.log(agreeResponse)
               break;
 
             case 'disagree':
               console.log('disagree saga')
+              console.log(action.payload.comment)
               const disagreeResponse = yield call(api.disagreeTicket, action.payload.comment, action.payload.ticket.id)
+              console.log(disagreeResponse)
               break;
           }
-        }else{
-          const updateResponse = yield call(api.updateTicketStatus, action.payload.ticket)
-        }
         yield put(actions.updated())
     }
     catch(error) {
@@ -33,12 +33,14 @@ export function * updateTicketSaga(action) {
 
 export function * addTicketSaga(action) {
     yield put(actions.isAdding())
-
     try {
+        console.log(action.payload)
         const response = yield call(api.addTicket, action.payload)
+        console.log(response)
         yield put(actions.added())
     }
     catch(error) {
+        console.warn(error)
         yield put(actions.addingFailed(error))
     }
 }
@@ -61,7 +63,16 @@ export function * getFileSaga(action){
 export function * downloadCommentsSaga(action){
   yield put(actions.commentsDownloading())
   try {
-      const response = yield call(api.getTaskComments, action.payload)
+      console.log(action.payload)
+      var response;
+      switch(action.payload.type){
+        case "documents":
+          response = yield call(api.getDocumentComments, action.payload.id);
+          break;
+        case "tasks":
+          response = yield call(api.getTaskComments, action.payload.id);
+          break;
+      }
       const comments = response.data
       yield put(actions.commentsDownloaded(comments))
   }

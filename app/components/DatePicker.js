@@ -14,6 +14,7 @@ export default class DatePickerComponent extends React.Component {
     maxDate.setFullYear(minDate.getFullYear()+1)
     const currentDate = new Date()
     currentDate.setDate(minDate.getDate()+7)
+    minDate.setDate(minDate.getDate()+7)
 
     return (
       <View style={{margin: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>

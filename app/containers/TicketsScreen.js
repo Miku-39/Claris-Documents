@@ -7,6 +7,8 @@ import { View,
   Keyboard,
   StyleSheet,
   FlatList,
+  RefreshControl,
+  ScrollView,
   NativeModules,
   LayoutAnimation,
   Platform
@@ -84,7 +86,8 @@ export default class TicketsScreen extends Component {
 
     state = {
         items: [],
-        searchBarIsShown: false
+        searchBarIsShown: false,
+        buttonRendered: false
     }
 
     componentDidMount () {
@@ -101,6 +104,10 @@ export default class TicketsScreen extends Component {
 
       items = tickets.tickets[type]
       items = items ? items : []
+
+      if(type=='tasks'){
+        //items.unshift({button: true})
+      }
 
       if(Platform.OS != 'android')
         LayoutAnimation.easeInEaseOut();
@@ -173,7 +180,7 @@ export default class TicketsScreen extends Component {
         <View style={{margin: 5, marginTop: 0}}>
         <TouchableHighlight
         onPress={() => {navigation.navigate('Ticket', {ticket: item,
-                                                       refresh: this._handleRefreshClick,
+                                                       onGoBack: () => this.props.fetch(),
                                                        type: 'documents'})}}
           underlayColor={Colors.accentColor} style={{borderRadius: 10}}>
         <View style={{flexDirection: 'row', backgroundColor: 'white', borderRadius: 10}}>
@@ -210,7 +217,7 @@ export default class TicketsScreen extends Component {
         <View style={{margin: 5, marginTop: 0}}>
         <TouchableHighlight
           onPress={() => {navigation.navigate('Ticket', {ticket: item,
-                                                         refresh: this._handleRefreshClick,
+                                                         onGoBack: () => this.props.fetch(),
                                                          type: 'tasks'})}}
           underlayColor={Colors.accentColor} style={{borderRadius: 10}}>
         <View style={{flexDirection: 'row', backgroundColor: 'white', borderRadius: 10}}>
@@ -233,6 +240,25 @@ export default class TicketsScreen extends Component {
     )
     }
 
+    /*renderButton = () => {
+      const { navigation } = this.props
+      return(
+        <View style={{margin: 5, marginTop: 0}}>
+        <TouchableOpacity
+          style={[styles.button]}
+          onPress={() => {}}>
+              <View style={{flex: 1,
+                            alignItems: 'center',
+                            justifyContent: 'center'}}>
+                <Text style={styles.agent}>
+                      Добавить задачу
+                </Text>
+              </View>
+        </TouchableOpacity>
+        </View>
+    )
+  }*/
+
     renderItem = ({item}) => {
       const { navigation } = this.props
       try {
@@ -241,7 +267,11 @@ export default class TicketsScreen extends Component {
           return(this.renderDocument(item))
           break;
         case 'tasks':
-          return(this.renderTask(item))
+          if(item.button){
+            //return(this.renderButton())
+          }else{
+            return(this.renderTask(item))
+          }
           break;
       }
       }catch(err){
@@ -271,13 +301,24 @@ export default class TicketsScreen extends Component {
                         placeholder='Поиск...'
                     />
                 }
-                <Loader message='Обновление заявок' isLoading={isFetching}>
+                <ScrollView
+                  contentContainerStyle={styles.scrollView}
+                  refreshControl={
+                    <RefreshControl
+                        refreshing={isFetching}
+                        onRefresh={this._handleRefreshClick}
+                        colors={['white']}
+                        progressBackgroundColor={Colors.accentColor}
+                        tintColor={Colors.accentColor}
+                        title="Загрузка..."
+                        titleColor={Colors.accentColor}/>
+                  }>
                   <FlatList
                       style={{flex: 1}}
                       data={showedItems}
                       renderItem={this.renderItem}
                       keyExtractor={extractKey} />
-                </Loader>
+                  </ScrollView>
             </View>
         )
     }
@@ -313,6 +354,14 @@ const styles = StyleSheet.create({
     agent:{
       fontSize: 20,
       color: 'black'
+    },
+    button: {
+      height: 60,
+      width: '45%',
+      borderRadius: 20,
+      backgroundColor: 'white',
+      justifyContent: 'center',
+      alignItems: 'center'
     },
     amount:{
       fontSize: 18,

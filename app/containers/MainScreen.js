@@ -5,12 +5,14 @@ import {
   Alert,
   StatusBar,
   ScrollView,
+  RefreshControl,
   LayoutAnimation,
   NativeModules,
   Platform,
   TouchableOpacity } from 'react-native'
 const { UIManager } = NativeModules;
 import { MaterialIcons } from '@expo/vector-icons'
+import { Colors } from '../theme'
 
 import { connect } from 'react-redux'
 import MainComponent from '../components/MainComponent'
@@ -145,7 +147,15 @@ export default class MainScreenContainer extends Component {
           <Loader message='Вход в систему...' isLoading={logging}>
           <View onLayout={() => {LayoutAnimation.easeInEaseOut();}}>
           <ScrollView
-              style={{width: '100%', height: '100%', flexDirection: 'column'}}>
+              style={{width: '100%', height: '100%', flexDirection: 'column'}}
+              refreshControl={
+                <RefreshControl
+                    refreshing={false}
+                    onRefresh={this._handleBarClick}
+                    colors={['white']}
+                    progressBackgroundColor={Colors.accentColor}
+                    tintColor={Colors.accentColor}/>
+              }>
           {showLogin &&
           <LoginComponent
               user={user}

@@ -39,6 +39,11 @@ export default class ServiceScreen extends Component {
               marginRight: 5}}>
 
                 <View style={styles.fieldsContainer}>
+                <PickerComponent
+                      label="Ответственный"
+                      items={this.props.session.employees}
+                      default={this.props.session.userId}
+                      onUpdate={(text) => {this.props.updateField(text, 'responsible')}}/>
                   <DatePickerComponent
                         isHighlighted={this.props.fieldsHighlights.finishDate}
                         date={finishDate}

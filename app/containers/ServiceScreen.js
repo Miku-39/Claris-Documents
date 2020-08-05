@@ -61,16 +61,17 @@ export default class ServiceScreen extends Component {
 
     componentWillMount() {
         const { employeeId, companyId, session } = this.props
-
+        var finishDate = new Date();
+        finishDate.setDate(finishDate.getDate() + 7);
         var ticket = {
-            actualCreationDate: new Date(),
+            registrationDate: new Date(),
+            finishDate: finishDate,
             author: employeeId,
-            status: '4285215000',
-            type: 'id',
-            client: companyId,
-            photo: null
+            status: '2175174168000',
+            company: companyId,
+            responsible: employeeId
         }
-
+        console.log(session)
         this.setState({ticket: ticket, session: session, fieldsHighlights: {}})
     }
 
@@ -116,7 +117,7 @@ export default class ServiceScreen extends Component {
             }}
 
         if(passed){
-          //this.props.addTicket(ticket)
+          this.props.addTicket(ticket)
         }else{
           Alert.alert('Заполните обязательные поля')
         }
@@ -139,11 +140,12 @@ export default class ServiceScreen extends Component {
     updateField = (data, field) => {
       const { ticket } = this.state
       ticket[field] = data == '' ? null : data
+      LayoutAnimation.easeInEaseOut();
       this.setState({ticket})
     }
 
     render = () => {
-        const { ticket, session} = this.state
+        const { ticket, session } = this.state
         const { isAdding, fileIsAdding } = this.props
 
         return (
