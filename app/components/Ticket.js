@@ -127,10 +127,21 @@ export default class Ticket extends React.Component {
     Text.defaultProps.allowFontScaling = true;
     const { fieldsProperties, changeStatus } = this.props
     const { ticket } = this.state
+    //ticket.contracts = 'https://apple.com'
 
     const handleShowFilePress = (fileType) => {
       console.log(fileType)
       this.props.getFile(ticket[fileType].id)
+    }
+
+    const handleLinkPress = (link) => {
+      console.log(link)
+      const receiptUrl = link
+      Linking.canOpenURL(receiptUrl).then(supported => {
+      if (supported) {Linking.openURL(receiptUrl);} else {
+          Alert.alert( "Ошибка",
+            "Не удалось найти программу, чтобы открыть ссылку данного формата",
+            [{ text: "Закрыть", onPress: () => {} }]);}});
     }
 
     const agreeTicket = () => {
@@ -222,6 +233,16 @@ export default class Ticket extends React.Component {
                             <Text onPress={() => {handleShowFilePress(key)}}
                             style={[styles.field, {color: '#006699'}]}>
                             {value.name}</Text>
+                        </View>)
+          }
+          if(fieldGroup[key].type == 'link'){
+            console.log(value)
+            fields.push(<View>
+                            <Text style={styles.fieldTitle}>
+                            {fieldGroup[key].name}</Text>
+                            <Text onPress={() => handleLinkPress(value)}
+                            style={[styles.field, {color: '#006699'}]}>
+                            {value}</Text>
                         </View>)
           }
 

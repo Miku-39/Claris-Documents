@@ -1,5 +1,5 @@
 const images = {
-  logo: require('../../assets/icon.png'),
+  logo: require('../../assets/transparent.png'),
   hand: require('./images/hand.png'),
   list: require('./images/list.png'),
   card: require('./images/card.png'),

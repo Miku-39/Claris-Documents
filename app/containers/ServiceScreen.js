@@ -118,6 +118,7 @@ export default class ServiceScreen extends Component {
 
         if(passed){
           this.props.addTicket(ticket)
+          console.log(ticket)
         }else{
           Alert.alert('Заполните обязательные поля')
         }
@@ -133,7 +134,7 @@ export default class ServiceScreen extends Component {
 
     addFileId = (fileId) => {
       const { ticket } = this.state
-      ticket.photo = fileId
+      ticket.file = fileId
       this.setState({ticket})
     }
 

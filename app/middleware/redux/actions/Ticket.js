@@ -11,11 +11,40 @@ export const ADD_TICKET_REQUEST = 'addTicket'
 export const IS_ADDING = 'isAdding'
 export const ADDED = 'added'
 export const ADDING_FAILED = 'addingFailed'
+export const ADD_FILE_REQUEST = 'addFile'
+export const FILE_IS_ADDING = 'fileIsAdding'
+export const FILE_ADDED = 'fileAdded'
+export const FILE_ADDING_FAILED = 'fileAddingFailed'
 
 export const DOWNLOAD_COMMENTS_REQUEST = 'downloadComments'
 export const COMMENTS_DOWNLOADED = 'commentsDownloaded'
 export const COMMENTS_DOWNLOADING_FAILED = 'commentsDownloadingFailed'
 export const COMMENTS_DOWNLOADING = 'commentsDownloading'
+
+export const addFile = (file) => {
+  return {
+      type: ADD_FILE_REQUEST,
+      payload: (file)
+  }
+}
+export const fileIsAdding = (fileIsAdding) => {
+    return {
+        type: FILE_IS_ADDING,
+        payload: fileIsAdding
+    }
+}
+export const fileAdded = (fileId) => {
+    return {
+        type: FILE_ADDED,
+        payload: fileId
+    }
+}
+export const fileAddingFailed = (error) => {
+    return {
+        type: FILE_ADDING_FAILED,
+        payload: error
+    }
+}
 
 export const add = (ticket) => {
     return {

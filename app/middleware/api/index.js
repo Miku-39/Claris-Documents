@@ -64,6 +64,15 @@ const fetchEmployees = () => instance.get('vNext/v1/employees', conf).catch(onEr
 //const agreeTicket = (comment, id) => instance.post(`vNext/v1/documents/${id}/agree`, {comment: comment})
 //const disagreeTicket = (comment, id) => instance.post(`vNext/v1/documents/${id}/disagree`, {comment: comment})
 const getFileLink = fileId => instance.get(`vNext/v1/files/${fileId}`)
+const addFile = (uri) =>  {
+    let bodyFormData = new FormData()
+    bodyFormData.append("file", {
+      uri: uri,
+      type: "image/jpeg", // or photo.type
+      name: "MobileApp.jpg"
+    });
+    return instance.post("/vNext/v1/files", bodyFormData, { headers: {'Content-Type': 'multipart/form-data' }} );
+}
 
 //const updateTicket = (ticket) => instance.patch(`/vnext/v1/requests/${ticket.id}`, ticket)
 const addTicket = (ticket) => instance.post('/vNext/v1/tasks', ticket).catch(onError)
@@ -71,6 +80,7 @@ const addTicket = (ticket) => instance.post('/vNext/v1/tasks', ticket).catch(onE
 
 export default { login, authorize, setAuthHeader,
                  fetchDocuments, fetchTasks,
+                 addFile,
                  getFileLink, fetchEmployees,
                  agreeTicket, disagreeTicket,
                  addTicket, getTaskComments,

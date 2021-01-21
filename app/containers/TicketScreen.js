@@ -18,6 +18,8 @@ const fieldsProperties = [
   category:           { name: 'Тип документа', type: 'list' },
   author:             { name: 'Автор', type: 'list' },
   company:            { name: 'Компания', type: 'list' },
+  objectStructure:    { name: 'Объект', type: 'list'},
+  contract:           { name: 'Договор', type: 'list'},
 }, {
   content:            { name: 'Содержание', type: 'text' },
   file:               { name: 'Файл', type: 'file'},

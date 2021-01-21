@@ -45,6 +45,19 @@ export function * addTicketSaga(action) {
     }
 }
 
+export function * addFileSaga(action){
+  yield put(actions.fileIsAdding())
+
+  try {
+      const response = yield call(api.addFile, action.payload)
+      const ticketId = response.data[0].id
+      yield put(actions.fileAdded(ticketId))
+  }
+  catch(error) {
+      yield put(actions.fileAddingFailed(error))
+  }
+}
+
 export function * getFileSaga(action){
   yield put(actions.fileIsDownloading())
   try {

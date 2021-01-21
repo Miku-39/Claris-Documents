@@ -3,13 +3,11 @@
     "name": "Документы",
     "slug": "claris-docs",
     "privacy": "public",
-    "sdkVersion": "36.0.0",
     "platforms": [
       "ios",
-      "android",
-      "web"
+      "android"
     ],
-    "version": "1.0.0",
+    "version": "1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
@@ -24,7 +22,17 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.altsoft.clarisdocs",
+      "buildNumber": "1.1",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Камера используется для создания заявок.",
+        "NSPhotoLibraryUsageDescription": "Фотографии используются для создания заявок."
+      }
+    },
+    "android": {
+      "package": "com.altsoft.clarisdocs",
+      "versionCode": 2
     },
     "description": ""
   }

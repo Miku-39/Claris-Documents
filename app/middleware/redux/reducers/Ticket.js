@@ -9,6 +9,10 @@ import {
   IS_UPDATING,
   UPDATED,
   UPDATE_FAILED,
+  ADD_FILE_REQUEST,
+  FILE_IS_ADDING,
+  FILE_ADDED,
+  FILE_ADDING_FAILED,
   CLEAR_FLAGS } from '../actions/Ticket'
 
 import {
@@ -33,6 +37,8 @@ const initialState = Map({
     added: false,
     fileIsDownloading: false,
     fileDownloaded: false,
+    fileIsAdding: false,
+    fileAdded: false,
     commentsDownloadingFailed: false,
     link: null,
     comments: [],
@@ -52,6 +58,18 @@ export default ticketReducer = (state = initialState, action) => {
 
         case ADDING_FAILED:
             return state.merge({ isAdding: false, error: action.payload })
+
+        case ADD_FILE_REQUEST:
+            return initialState
+
+        case FILE_IS_ADDING:
+            return state.merge({ fileIsAdding: true })
+
+        case FILE_ADDED:
+            return state.merge({ fileIsAdding: false, fileAdded: true, fileId: action.payload })
+
+        case FILE_ADDING_FAILED:
+            return state.merge({ fileIsAdding: false, error: action.payload })
 
         case UPDATE_TICKET_REQUEST:
             return initialState
